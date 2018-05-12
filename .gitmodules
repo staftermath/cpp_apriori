@@ -1,0 +1,3 @@
+[submodule "apriori_tests/lib/googletest"]
+	path = apriori_tests/lib/googletest
+	url = https://github.com/google/googletest.git
