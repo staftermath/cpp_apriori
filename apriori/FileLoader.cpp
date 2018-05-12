@@ -3,13 +3,15 @@
 //
 
 #include "FileLoader.h"
+#include <fstream>
+using namespace std;
 
 void FileLoader::load() {
-    _buffer = infile(_file_path);
+    _buffer.open(_file_path);
 }
 void FileLoader::load(bool to_memory) {
-    load();
-    to_memory = true;
+    if (!_buffer.is_open()) load();
+    cached = to_memory;
 }
 
 FileLoader::~FileLoader() {
@@ -28,11 +30,19 @@ vector<string> FileLoader::next() {
         delimiter = this_line.find(_sep, start);
     }
     result.push_back(this_line.substr(start, delimiter-start));
-    if (to_memory) {
-        _hash.push_back(result);
+    if (cached) {
+        _cache.push_back(result);
     }
     return result;
 }
 void FileLoader::close() {
     if (_buffer.is_open()) _buffer.close();
+}
+
+bool FileLoader::eof() {
+    return _buffer.eof();
+}
+
+const vector<vector<string>>& FileLoader::get_cache() {
+    return _cache;
 }
