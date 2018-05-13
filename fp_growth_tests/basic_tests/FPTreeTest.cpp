@@ -27,7 +27,7 @@ TEST(FPTree, test_eq) {
     string large_data = "/home/gwengww/Documents/repos/cpp_apriori/fp_growth_tests/test_data/T40I10D100K.txt";
     clock_t cstart = clock();
 
-    fptree = FPTree(large_data, 15000, " ");
+    fptree = FPTree(large_data, 10000, " ");
     double duration = ( std::clock() - cstart ) / (double) CLOCKS_PER_SEC;
     cout<<"total duration: "<< duration << endl;
 
