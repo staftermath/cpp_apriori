@@ -23,16 +23,20 @@ void insertTree(shared_ptr<FPNode>& root,
         next = make_shared<FPNode>(trans[start]);
         next->parent = root;
         root->children[trans[start]] = next;
-        auto last_node_link = hash[trans[start]]->last_node_link;
-        hash[trans[start]]->last_node_link = next;
-        last_node_link->node_link = next;
+        if (hash[trans[start]] == nullptr) {
+            hash[trans[start]] = next;
+            next->last_node_link = next;
+        } else {
+            hash[trans[start]]->last_node_link->node_link = next;
+            hash[trans[start]]->last_node_link = next;
+        }
     }
     insertTree(next, trans, start+1, hash);
 }
 
 FPTree::FPTree(string filename, long min_support, string sep) {
     this->min_support = min_support;
-    this->root = make_shared<FPNode>("");
+    this->root = make_shared<FPNode>("dummy");
     FileLoader fileLoader(move(filename), move(sep));
     fileLoader.load(true);
 //    first iteration to create frequent items.
@@ -48,9 +52,10 @@ FPTree::FPTree(string filename, long min_support, string sep) {
 //    FPNode* temp;
     for (auto p: freqItems) {
         if (p.second >= this->min_support) {
-            this->header_table[p.first] = make_shared<FPNode>("");
-            this->header_table[p.first]->frequency = p.second;
-            this->header_table[p.first]->last_node_link = this->header_table[p.first];
+//            this->header_table[p.first] = make_shared<FPNode>("");
+//            this->header_table[p.first]->frequency = p.second;
+//            this->header_table[p.first]->last_node_link = this->header_table[p.first];
+            this->header_table[p.first] = nullptr;
         }
     }
 

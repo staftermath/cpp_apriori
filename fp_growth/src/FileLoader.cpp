@@ -28,7 +28,8 @@ vector<string> FileLoader::next() {
         start = delimiter + 1;
         delimiter = this_line.find(_sep, start);
     }
-    result.push_back(this_line.substr(start, delimiter-start));
+    string ending = this_line.substr(start, delimiter-start);
+    if (ending!="") result.push_back(ending);
     if (cached) {
         _cache.push_back(result);
     }
@@ -49,7 +50,8 @@ vector<string> FileLoader::next(unordered_map<string, long> count, long support)
         start = delimiter + 1;
         delimiter = this_line.find(_sep, start);
     }
-    result.push_back(this_line.substr(start, delimiter-start));
+    string ending = this_line.substr(start, delimiter-start);
+    if (ending!="") result.push_back(ending);
     if (cached) {
         _cache.push_back(result);
     }
