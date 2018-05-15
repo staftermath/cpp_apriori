@@ -34,8 +34,11 @@ void insertTree(shared_ptr<FPNode>& root,
     insertTree(next, trans, start+1, hash);
 }
 
-FPTree::FPTree(string filename, long min_support, string sep) {
+FPTree::FPTree(long min_support) {
     this->min_support = min_support;
+}
+
+void FPTree::construct(string filename, string sep) {
     this->root = make_shared<FPNode>("dummy");
     FileLoader fileLoader(move(filename), move(sep));
     fileLoader.load(true);
@@ -46,6 +49,7 @@ FPTree::FPTree(string filename, long min_support, string sep) {
         for (const ITEM& s: transaction) {
             freqItems[s]++;
         }
+        this->count++;
     }
     fileLoader.close();
 //    create header links
@@ -82,5 +86,28 @@ FPTree::FPTree(string filename, long min_support, string sep) {
 
 }
 
-FPTree::FPTree(string filename, long min_support): FPTree(move(filename), min_support, ","){
+void FPTree::construct(ITEM leaf, shared_ptr<FPNode> link_head) {
+    this->root = make_shared<FPNode>(leaf);
+    while (link_head != nullptr) {
+        root->frequency += link_head->frequency; // consider keeping a frequency table for all freq items;
+        build_pattern(link_head, root);
+        link_head = link_head->node_link;
+    }
+    this->count = root->frequency;
+}
+
+void FPTree::build_pattern(shared_ptr<FPNode> from, shared_ptr<FPNode> to) {
+    if (from->parent == nullptr) return;
+    auto search = to->children.find(from->word);
+    if (search != to->children.end()) {
+        search->second->frequency += from->frequency;
+        build_pattern(from->parent, to);
+        build_pattern(from->parent, search->second);
+    } else {
+        shared_ptr<FPNode> next = make_shared<FPNode>(from->word);
+        next->parent = to;
+        to->children[from->word] = next;
+        build_pattern(from->parent, to);
+        build_pattern(from->parent, next);
+    }
 }

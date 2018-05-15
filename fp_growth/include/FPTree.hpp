@@ -27,11 +27,19 @@ struct FPNode {
 };
 
 struct FPTree {
-    FPTree(string filename, long min_support, string sep);
-    FPTree(string filename, long min_support);
+public:
+    FPTree(long min_support);
+    void construct(string filename, string sep);
+    void construct(string filename) {
+        construct(filename, ",");
+    };
+    void construct(ITEM leaf, shared_ptr<FPNode> link_head);
     shared_ptr<FPNode> root;
     unordered_map<ITEM, shared_ptr<FPNode>> header_table;
     long min_support;
+    long count=0;
+private:
+    void build_pattern(shared_ptr<FPNode> from, shared_ptr<FPNode> to);
 };
 
 #endif //CPP_APRIORI_FREQUENTPATTERN_H
