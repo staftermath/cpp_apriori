@@ -2,3 +2,6 @@ cmake-build-debug/
 
 # idea
 .idea
+
+# sample data
+fp_growth_tests/test_data/*.txt
