@@ -13,17 +13,15 @@ vector<Rule> ARule::construct(const FPTree & fptree) {
     }
 };
 
-void ARule::build_rule(FPTree& fptree, vector<Rule>& container) {
-    for (auto child: fptree.root->children) {
+void ARule::build_rule(FPTree& targetTree, vector<Rule>& container, FPTree& mainTree) {
+    for (auto child: targetTree.root->children) {
         Rule rule = Rule();
-        rule.RHS.push_back(fptree.root->word);
-        rule.rhs_count = fptree.root->frequency;
+        rule.RHS.push_back(targetTree.root->word);
+        rule.rhs_count = targetTree.root->frequency;
         auto link = child.second;
-        while (link != nullptr && link->frequency >= fptree.min_support) {
+        while (link != nullptr && link->frequency >= targetTree.min_support) {
             rule.LHS.push_back(link->word);
             Rule newRule = rule;
-            newRule.lhs_count = link->frequency;
-            newRule.confidence = static_cast<double>(newRule.lhs_count)/newRule.rhs_count;
 
         }
     }

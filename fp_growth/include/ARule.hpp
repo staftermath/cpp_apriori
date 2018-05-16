@@ -12,14 +12,14 @@ using namespace std;
 struct Rule {
     vector<string> LHS;
     vector<string> RHS;
-    long lhs_count;
+    long frequence;
     double confidence;
     double lift;
     long rhs_count;
 
     Rule& operator=(const Rule& other) {
         if (this != &other) {
-            lhs_count = other.lhs_count;
+            frequence = other.frequence;
             confidence = other.confidence;
             lift = other.lift;
             rhs_count = other.rhs_count;
@@ -37,7 +37,7 @@ public:
 private:
     double mConfidence;
     double mLift;
-    void build_rule(FPTree& fptree, vector<Rule>& container);
+    void build_rule(FPTree& targetTree, vector<Rule>& container, FPTree& mainTree);
 
 };
 
