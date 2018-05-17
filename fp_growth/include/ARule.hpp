@@ -34,6 +34,7 @@ public:
     ARule(double confidence, double lift): mConfidence(confidence), mLift(lift) {};
     vector<Rule> construct(const FPTree & fptree);
     FPTree growPatternTree(ITEM leaf, FPTree fptree);
+    long search_support(vector<ITEM>& pattern, shared_ptr<FPNode> node, size_t start);
 private:
     double mConfidence;
     double mLift;

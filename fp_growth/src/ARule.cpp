@@ -3,6 +3,7 @@
 //
 
 #include "include/ARule.hpp"
+#include <iostream>
 using namespace std;
 
 vector<Rule> ARule::construct(const FPTree & fptree) {
@@ -25,4 +26,21 @@ void ARule::build_rule(FPTree& targetTree, vector<Rule>& container, FPTree& main
 
         }
     }
+}
+
+long ARule::search_support(vector<ITEM>& pattern, shared_ptr<FPNode> node, size_t start) {
+    long support = 0;
+    cout << "searching node " << node->word << endl;
+    for (auto child: node->children) {
+        cout << "searching child of node " << node->word << ": " << child.second->word <<
+             "freq: " << child.second->frequency << endl;
+        cout << "support: " << support << endl;
+        if (child.second->word == pattern[start]) {
+            if (start == 0) support += child.second->frequency;
+            else support += search_support(pattern, child.second, start - 1);
+        } else {
+            support += search_support(pattern, child.second, start);
+        }
+    }
+    return support;
 }

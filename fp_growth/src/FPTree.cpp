@@ -9,20 +9,20 @@
 
 using namespace std;
 
-void insertTree(shared_ptr<FPNode>& root,
+void insertTree(shared_ptr<FPNode>& node,
                 const vector<ITEM>& trans,
                 const size_t & start,
                 unordered_map<ITEM, shared_ptr<FPNode>>& hash) {
     if (start >= trans.size()) return;
-    auto search = root->children.find(trans[start]);
+    auto search = node->children.find(trans[start]);
     shared_ptr<FPNode> next;
-    if (search != root->children.end()) {
+    if (search != node->children.end()) {
         next = search->second;
         next->frequency++;
     } else {
         next = make_shared<FPNode>(trans[start]);
-        next->parent = root;
-        root->children[trans[start]] = next;
+        next->parent = node;
+        node->children[trans[start]] = next;
         if (hash[trans[start]] == nullptr) {
             hash[trans[start]] = next;
             next->last_node_link = next;
@@ -79,9 +79,7 @@ void FPTree::construct(string filename, string sep) {
         sort(transaction.begin(), transaction.end(), [&freqItems](const ITEM & a, const ITEM & b){
             return tie(freqItems[a], a) > tie(freqItems[b], b);
         });
-        for (const string& str: transaction) {
-            insertTree(root, transaction, 0, header_table);
-        }
+        insertTree(root, transaction, 0, header_table);
     }
 
 }
