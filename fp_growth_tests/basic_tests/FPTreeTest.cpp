@@ -8,6 +8,7 @@
 #include <string>
 #include <fstream>
 #include "include/FPTree.hpp"
+using FREQ = pair<set<string>, long>;
 using namespace std;
 
 TEST(FPTree, test_eq) {
@@ -26,8 +27,19 @@ TEST(FPTree, test_eq) {
             cout << k.first << endl;
         }
     }
+
+    auto conditional_tree = FPTree::build_conditional_tree("item6", fptree);
+
+    cout << "printing FP Tree" << endl;
+    for (auto v: conditional_tree.root->children) {
+        cout << "children of root: " << v.first << endl;
+        cout << "children of " << v.first << endl;
+        for (auto k: v.second->children) {
+            cout << k.first << endl;
+        }
+    }
     string large_data = "/home/gwengww/Documents/repos/cpp_apriori/fp_growth_tests/test_data/T40I10D100K.txt";
-    clock_t cstart = clock();
+    auto cstart = clock();
     fptree = FPTree(10000);
     fptree.construct(large_data, " ");
     double duration = ( std::clock() - cstart ) / (double) CLOCKS_PER_SEC;
@@ -42,4 +54,17 @@ TEST(FPTree, test_eq) {
         if (v.second->children.size() >=3) break;
     }
 
+    cstart = clock();
+    conditional_tree = FPTree::build_conditional_tree("72", fptree);
+    duration = ( std::clock() - cstart ) / (double) CLOCKS_PER_SEC;
+    cout << "total duration: "<< duration << endl;
+
+    for (auto v: conditional_tree.root->children) {
+        cout << "Printing big conditional tree: " << v.second->word << endl;
+        for (auto w: v.second->children) {
+            cout << w.first << ", " << flush;
+        }
+        cout << endl;
+        if (v.second->children.size() >=3) break;
+    }
 }

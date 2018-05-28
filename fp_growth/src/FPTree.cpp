@@ -6,6 +6,9 @@
 #include "include/FileLoader.hpp"
 #include <fstream>
 #include <algorithm>
+#include <unordered_set>
+#include <assert.h>
+#include <iostream>
 
 using namespace std;
 
@@ -36,10 +39,10 @@ void insertTree(shared_ptr<FPNode>& node,
 
 FPTree::FPTree(long min_support) {
     this->min_support = min_support;
+    this->root = make_shared<FPNode>("");
 }
 
 void FPTree::construct(string filename, string sep) {
-    this->root = make_shared<FPNode>("dummy");
     FileLoader fileLoader(move(filename), move(sep));
     fileLoader.load(true);
 //    first iteration to create frequent items.
@@ -56,9 +59,6 @@ void FPTree::construct(string filename, string sep) {
 //    FPNode* temp;
     for (auto p: freqItems) {
         if (p.second >= this->min_support) {
-//            this->header_table[p.first] = make_shared<FPNode>("");
-//            this->header_table[p.first]->frequency = p.second;
-//            this->header_table[p.first]->last_node_link = this->header_table[p.first];
             this->header_table[p.first] = nullptr;
         }
     }
@@ -88,24 +88,88 @@ void FPTree::construct(ITEM leaf, shared_ptr<FPNode> link_head) {
     this->root = make_shared<FPNode>(leaf);
     while (link_head != nullptr) {
         root->frequency += link_head->frequency; // consider keeping a frequency table for all freq items;
-        build_pattern(link_head, root);
+        build_pattern(link_head);
         link_head = link_head->node_link;
     }
     this->count = root->frequency;
 }
 
-void FPTree::build_pattern(shared_ptr<FPNode> from, shared_ptr<FPNode> to) {
-    if (from->parent == nullptr) return;
-    auto search = to->children.find(from->word);
-    if (search != to->children.end()) {
-        search->second->frequency += from->frequency;
-        build_pattern(from->parent, to);
-        build_pattern(from->parent, search->second);
-    } else {
-        shared_ptr<FPNode> next = make_shared<FPNode>(from->word);
-        next->parent = to;
-        to->children[from->word] = next;
-        build_pattern(from->parent, to);
-        build_pattern(from->parent, next);
+void FPTree::build_pattern(shared_ptr<FPNode> root) {
+
+}
+
+FPTree FPTree::build_conditional_tree(ITEM word, FPTree& fptree) {
+    auto link_head = fptree.header_table[word];
+    FPTree newTree = FPTree(fptree.min_support);
+    shared_ptr<FPNode> new_head_link;
+    shared_ptr<FPNode> node;
+    shared_ptr<FPNode> new_node;
+    unordered_map<shared_ptr<FPNode>, shared_ptr<FPNode>> visited;
+
+    // add new root to visited;
+    visited[fptree.root] = newTree.root;
+    // construct link head for target word
+    new_head_link = make_shared<FPNode>(link_head->word);
+    new_head_link->frequency = link_head->frequency;
+    new_head_link->last_node_link = new_head_link;
+    newTree.header_table[word] = new_head_link;
+    visited[link_head] = new_head_link;
+    link_head = link_head->node_link;
+
+    while (link_head != nullptr) {
+        new_head_link->node_link = make_shared<FPNode>(link_head->word);
+        newTree.header_table[word]->last_node_link = new_head_link->node_link;
+
+        new_head_link = new_head_link->node_link;
+        new_head_link->frequency = link_head->frequency;
+        visited[link_head] = new_head_link;
+        link_head = link_head->node_link;
     }
+    link_head = fptree.header_table[word];
+    long counter = 0;
+    while (link_head != nullptr) {
+        new_head_link = visited[link_head];
+        new_node = new_head_link;
+        node = link_head->parent;
+        while (!node->word.empty()) {
+//            not root node
+            auto searchParent = visited.find(node);
+            if ( searchParent != visited.end()) {
+                new_node->parent = searchParent->second;
+                auto children_of_parent = new_node->parent->children;
+                if (children_of_parent.find(new_node->word) == children_of_parent.end());{
+                    new_node->parent->children[new_node->word] = new_node;
+                }
+                new_node = new_node->parent;
+                new_node->frequency += node->frequency;
+            } else {
+                new_node->parent = make_shared<FPNode>(node->word);
+                new_node->parent->children[new_node->word] = new_node;
+                visited[node] = new_node->parent;
+                new_node = new_node->parent;
+                new_node->frequency = node->frequency;
+                auto searchLink = newTree.header_table.find(node->word);
+                if ( searchLink == newTree.header_table.end()) {
+                    newTree.header_table[node->word] = new_node;
+                    newTree.header_table[node->word]->last_node_link = newTree.header_table[node->word];
+                } else {
+                    searchLink->second->last_node_link->node_link = new_node;
+                    searchLink->second->last_node_link = new_node;
+                }
+            }
+            node = node->parent;
+        }
+        // root shouldn't already have a children with this word
+        auto children_of_root = newTree.root->children;
+        auto searchVisited = children_of_root.find(new_node->word);
+        if (searchVisited == children_of_root.end()) {
+            newTree.root->children[new_node->word] = new_node;
+            new_node->parent = fptree.root;
+        }
+        // move to next link_node
+        link_head = link_head->node_link;
+        counter++;
+    }
+
+    return newTree;
 }

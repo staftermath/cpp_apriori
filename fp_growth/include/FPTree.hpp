@@ -7,7 +7,7 @@
 
 #include <string>
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <memory>
 #include <unordered_map>
 
@@ -38,8 +38,10 @@ public:
     unordered_map<ITEM, shared_ptr<FPNode>> header_table;
     long min_support;
     long count=0;
+    static FPTree build_conditional_tree(ITEM word, FPTree& fptree);
+
 private:
-    void build_pattern(shared_ptr<FPNode> from, shared_ptr<FPNode> to);
+    void build_pattern(shared_ptr<FPNode> root);
 };
 
 #endif //CPP_APRIORI_FREQUENTPATTERN_H
